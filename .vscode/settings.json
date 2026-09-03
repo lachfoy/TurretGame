@@ -1,0 +1,13 @@
+{
+    "editor.formatOnSave": true,
+    "C_Cpp.formatting": "clangFormat",
+
+    "cmake.configureOnOpen": true,
+
+    "cmake.generator": "Ninja",
+
+    "cmake.configureSettings": {
+        "CMAKE_PREFIX_PATH": "C:/dev/SDL3-3.2.16/cmake",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+    }
+}
