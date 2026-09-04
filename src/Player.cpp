@@ -84,7 +84,7 @@ void Player::Update(float dt)
 
             float pelletSpeed = bulletSpeed * speedMultiplier;
 
-            auto* projectile = mWorld->CreateEntity<Projectile>("data/bullet.png");
+            auto* projectile = Engine::instance->world->CreateEntity<Projectile>("data/bullet.png");
 
             projectile->position = position;
             projectile->rotation = glm::degrees(angle);

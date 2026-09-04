@@ -19,10 +19,6 @@ class Entity
     float rotation = 0.0f;
     glm::vec2 scale = glm::vec2(1, 1);
 
-  protected:
-    World* mWorld = nullptr;
-
   private:
     bool mPendingDestroy = false;
-    friend class World;
 };

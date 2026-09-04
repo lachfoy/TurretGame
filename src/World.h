@@ -18,7 +18,6 @@ class World
     {
         static_assert(std::is_base_of_v<Entity, T>);
         auto e = std::make_unique<T>(std::forward<Args>(args)...);
-        e->mWorld = this;
         T* ptr = e.get();
         mPendingEntities.push_back(std::move(e));
         return ptr;
