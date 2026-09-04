@@ -1,9 +1,11 @@
 #include "Engine.h"
+#include "TextureManager.h"
 
 #include <glad/glad.h>
 
 #include <algorithm>
 #include <cstdio>
+#include <memory>
 
 Engine* Engine::instance = nullptr;
 
@@ -66,6 +68,8 @@ void Engine::InitSubsystems()
 
     renderer = std::make_unique<Renderer>();
     renderer->Init();
+
+    textureManager = std::make_unique<TextureManager>();
 }
 
 bool Engine::Init()
@@ -96,13 +100,12 @@ void Engine::Shutdown()
         world.reset();
     }
 
-    if (renderer)
-    {
-        renderer->Shutdown();
-        renderer.reset();
-    }
+    renderer->Shutdown();
+    renderer.reset();
 
     input.reset();
+
+    textureManager.reset();
 
     if (glContext)
     {
@@ -156,7 +159,12 @@ void Engine::Run()
         }
 
         renderer->Clear(0.05f, 0.05f, 0.08f);
-        renderer->BeginFrame(kDefaultWindowWidth, kDefaultWindowHeight, glm::vec2(0, 0), 5.0f);
+
+        int windowWidth, windowHeight;
+        SDL_GetWindowSizeInPixels(window, &windowWidth, &windowHeight);
+        camera.SetViewport(windowWidth, windowHeight);
+
+        renderer->BeginFrame(camera);
 
         if (world)
             world->Render();

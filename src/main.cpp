@@ -1,72 +1,34 @@
 
 #include "Engine.h"
-
-class Player : public Entity
-{
-  public:
-    explicit Player(Texture texture) : mTexture(texture) {}
-
-    void Update(float dt) override
-    {
-        const auto& input = Engine::instance->input;
-
-        glm::vec2 vel = glm::vec2(0.0f);
-        if (input->IsDown(SDLK_W))
-        {
-            vel.y += 1.0f;
-        }
-        if (input->IsDown(SDLK_A))
-        {
-            vel.x += -1.0f;
-        }
-        if (input->IsDown(SDLK_S))
-        {
-            vel.y += -1.0f;
-        }
-        if (input->IsDown(SDLK_D))
-        {
-            vel.x += 1.0f;
-        }
-
-        if (glm::length(vel) > 0.0f)
-            vel = glm::normalize(vel);
-
-        auto oldPosition = position;
-        position += vel * mSpeed * dt;
-
-        if (position != oldPosition)
-        {
-            std::printf("new pos: %.0f,%.0f\n", position.x, position.y);
-        }
-    }
-
-    void Render() override
-    {
-        Engine::instance->renderer->DrawSprite(mTexture, position, glm::vec2(13, 19) * scale,
-                                               rotation, color);
-    }
-
-  private:
-    Texture mTexture;
-    glm::vec4 color = glm::vec4(1.0f);
-    float mSpeed = 200.0f;
-};
+#include "Player.h"
 
 class DemoWorld : public World
 {
   public:
     void Init() override
     {
-        mPlayerTexture = Engine::instance->renderer->LoadTexture("data/guy.png");
-        mPlayer = CreateEntity<Player>(mPlayerTexture);
-        // mPlayer->position = glm::vec2(300, 300);
+        World::Init();
+        Engine::instance->textureManager->Load("data/guy.png");
+        Engine::instance->textureManager->Load("data/bullet.png");
+
+        mPlayer = CreateEntity<Player>("data/guy.png");
     }
 
-    void Shutdown() override { Engine::instance->renderer->DeleteTexture(mPlayerTexture); }
+    void Update(float dt) override
+    {
+        World::Update(dt);
+        Engine::instance->camera.SetPosition(mPlayer->position);
+    }
+
+    void Shutdown() override
+    {
+        World::Shutdown();
+        Engine::instance->textureManager->Unload("data/bullet.png");
+        Engine::instance->textureManager->Unload("data/guy.png");
+    }
 
   private:
     Player* mPlayer;
-    Texture mPlayerTexture;
 };
 
 int main()

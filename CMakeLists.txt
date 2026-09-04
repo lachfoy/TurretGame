@@ -33,7 +33,15 @@ add_executable(TurretGame
     src/Renderer.h
     src/Renderer.cpp
     src/World.h
-    src/Entity.h)
+    src/Entity.h
+    src/Camera.h
+    src/TextureManager.h
+    src/TextureManager.cpp
+    src/Texture.h
+    src/Player.h
+    src/Player.cpp
+    src/Projectile.h
+    src/Projectile.cpp)
 
 target_include_directories(TurretGame PRIVATE ${GLM_DIR} ${STB_DIR})
 

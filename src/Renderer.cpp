@@ -1,4 +1,6 @@
 #include "Renderer.h"
+#include "Camera.h"
+#include "Texture.h"
 
 #include <glad/glad.h>
 
@@ -96,7 +98,6 @@ GLuint LinkProgram(GLuint vertexShader, GLuint fragmentShader)
 }
 } // namespace
 
-// The heap-allocated object a Texture::id opaquely points to.
 struct GLTexture
 {
     GLuint id;
@@ -239,22 +240,18 @@ void Renderer::Clear(float r, float g, float b)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::BeginFrame(int windowWidth, int windowHeight, glm::vec2 cameraPos, float zoom)
+void Renderer::BeginFrame(const Camera& camera)
 {
-    glViewport(0, 0, windowWidth, windowHeight);
+    int vpX, vpY, vpWidth, vpHeight;
+    camera.GetViewportRect(vpX, vpY, vpWidth, vpHeight);
+    glViewport(vpX, vpY, vpWidth, vpHeight);
+
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
 
-    float halfW = windowWidth * 0.5f;
-    float halfH = windowHeight * 0.5f;
-    glm::mat4 proj = glm::ortho(-halfW, halfW, -halfH, halfH, -1.0f, 1.0f);
-
-    glm::mat4 view = glm::scale(glm::mat4(1.0f), glm::vec3(zoom, zoom, 1.0f));
-    view = glm::translate(view, glm::vec3(-cameraPos, 0.0f));
-
-    mImpl->viewProj = proj * view;
+    mImpl->viewProj = camera.GetViewProj();
     mImpl->vertices.clear();
     mImpl->currentTexture = 0;
 }
@@ -272,6 +269,8 @@ Texture Renderer::LoadTexture(const char* path)
         std::fprintf(stderr, "Failed to load texture: %s\n", path);
         return {};
     }
+
+    std::printf("Loaded texture: %s\n", path);
 
     GLuint id;
     glGenTextures(1, &id);
@@ -297,7 +296,7 @@ Texture Renderer::LoadTexture(const char* path)
 
 void Renderer::DeleteTexture(Texture texture)
 {
-    assert(texture.id != 0);
+    assert(texture.id != kInvalidTextureId);
 
     GLTexture* tex = reinterpret_cast<GLTexture*>(texture.id);
     glDeleteTextures(1, &tex->id);
@@ -307,10 +306,10 @@ void Renderer::DeleteTexture(Texture texture)
 void Renderer::DrawSprite(Texture texture, glm::vec2 position, glm::vec2 size,
                           float rotationDegrees, glm::vec4 color, glm::vec4 uvRect)
 {
-    GLuint glId =
-        texture.id != 0 ? reinterpret_cast<GLTexture*>(texture.id)->id : mImpl->whiteTexture;
+    GLuint glId = texture.id != kInvalidTextureId ? reinterpret_cast<GLTexture*>(texture.id)->id
+                                                  : mImpl->whiteTexture;
 
-    // Batch-breaking state change: flush whatever's queued under the old texture first.
+    // flush whatevers queued under the old texture first.
     if (glId != mImpl->currentTexture && mImpl->currentTexture != 0)
         Flush(*mImpl);
 

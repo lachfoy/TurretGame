@@ -20,14 +20,46 @@ class World
         auto e = std::make_unique<T>(std::forward<Args>(args)...);
         e->mWorld = this;
         T* ptr = e.get();
-        mEntities.push_back(std::move(e));
+        mPendingEntities.push_back(std::move(e));
         return ptr;
+    }
+
+    template <typename T, typename Predicate> const std::vector<T*>& Query(Predicate&& pred) const
+    {
+        std::vector<T*> result;
+        for (auto& e : mEntities)
+        {
+            if (T* t = dynamic_cast<T*>(e.get()))
+                if (pred(*t))
+                    result.push_back(t);
+        }
+        return result;
+    }
+
+    template <typename T> const std::vector<T*>& Query() const
+    {
+        return Query<T>([](const T&) { return true; });
+    }
+
+    template <typename T>
+    const std::vector<T*>& QueryInRadius(const World& world, glm::vec2 center, float radius)
+    {
+        float r2 = radius * radius;
+        return world.Query<T>([&](const T& t) { return glm::length(t.position - center) <= r2; });
     }
 
     virtual void Update(float dt)
     {
-        for (auto& e : mEntities)
+        for (const auto& e : mEntities)
+        {
             e->Update(dt);
+        }
+
+        for (auto& e : mPendingEntities)
+        {
+            mEntities.push_back(std::move(e));
+        }
+        mPendingEntities.clear();
 
         mEntities.erase(std::remove_if(mEntities.begin(), mEntities.end(),
                                        [](const auto& e) { return e->IsPendingDestroy(); }),
@@ -42,4 +74,5 @@ class World
 
   private:
     std::vector<std::unique_ptr<Entity>> mEntities;
+    std::vector<std::unique_ptr<Entity>> mPendingEntities;
 };
