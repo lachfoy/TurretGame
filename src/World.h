@@ -6,13 +6,16 @@
 
 #include "Entity.h"
 
+class Player;
+
 class World
 {
   public:
-    virtual ~World() {}
+    ~World() {}
 
-    virtual void Init() {}
-    virtual void Shutdown() {}
+    void Init();
+
+    void Shutdown();
 
     template <typename T, typename... Args> T* CreateEntity(Args&&... args)
     {
@@ -47,31 +50,11 @@ class World
         return world.Query<T>([&](const T& t) { return glm::length(t.position - center) <= r2; });
     }
 
-    virtual void Update(float dt)
-    {
-        for (const auto& e : mEntities)
-        {
-            e->Update(dt);
-        }
-
-        for (auto& e : mPendingEntities)
-        {
-            mEntities.push_back(std::move(e));
-        }
-        mPendingEntities.clear();
-
-        mEntities.erase(std::remove_if(mEntities.begin(), mEntities.end(),
-                                       [](const auto& e) { return e->IsPendingDestroy(); }),
-                        mEntities.end());
-    }
-
-    virtual void Render()
-    {
-        for (auto& e : mEntities)
-            e->Render();
-    }
+    void Update(float dt);
+    void Render();
 
   private:
     std::vector<std::unique_ptr<Entity>> mEntities;
     std::vector<std::unique_ptr<Entity>> mPendingEntities;
+    Player* mPlayer;
 };

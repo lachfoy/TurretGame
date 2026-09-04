@@ -22,8 +22,6 @@ class Engine
     void Shutdown();
     void Run();
 
-    void SetWorld(std::unique_ptr<World> world);
-
     SDL_Window* window = nullptr;
     SDL_GLContext glContext = nullptr;
 

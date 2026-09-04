@@ -70,6 +70,9 @@ void Engine::InitSubsystems()
     renderer->Init();
 
     textureManager = std::make_unique<TextureManager>();
+
+    world = std::make_unique<World>();
+    world->Init();
 }
 
 bool Engine::Init()
@@ -100,8 +103,11 @@ void Engine::Shutdown()
         world.reset();
     }
 
-    renderer->Shutdown();
-    renderer.reset();
+    if (renderer)
+    {
+        renderer->Shutdown();
+        renderer.reset();
+    }
 
     input.reset();
 
@@ -173,10 +179,4 @@ void Engine::Run()
 
         SDL_GL_SwapWindow(window);
     }
-}
-
-void Engine::SetWorld(std::unique_ptr<World> _world)
-{
-    world = std::move(_world);
-    world->Init();
 }
