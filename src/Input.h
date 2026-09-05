@@ -6,6 +6,12 @@
 class Input
 {
   public:
+    Input() {}
+    ~Input() {}
+
+    Input(const Input&) = delete;
+    Input& operator=(const Input&) = delete;
+
     void BeginFrame()
     {
         mKeyboard.framePressed.clear();

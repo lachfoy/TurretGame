@@ -10,6 +10,9 @@ class TextureManager
     TextureManager() {}
     ~TextureManager() { UnloadAll(); }
 
+    TextureManager(const TextureManager&) = delete;
+    TextureManager& operator=(const TextureManager&) = delete;
+
     void Load(const std::string& path);
     void Unload(const std::string& path);
     void UnloadAll();

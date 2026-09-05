@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Random.h"
 #include "TextureManager.h"
 
 #include <glad/glad.h>
@@ -70,6 +71,8 @@ void Engine::InitSubsystems()
     renderer->Init();
 
     textureManager = std::make_unique<TextureManager>();
+
+    Random::Init(12345);
 
     world = std::make_unique<World>();
     world->Init();

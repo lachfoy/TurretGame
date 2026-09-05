@@ -1,9 +1,11 @@
 #include "Player.h"
 #include "Engine.h"
 #include "Projectile.h"
+#include "Random.h"
 #include "glm/trigonometric.hpp"
 #include <SDL3/SDL_mouse.h>
-#include <glm/gtc/random.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 Player::Player(const std::string& texturePath)
 {
@@ -32,7 +34,7 @@ void Player::Update(float dt)
         vel.x += 1.0f;
     }
 
-    if (glm::length(vel) > 0.0f)
+    if (glm::length2(vel) > 0.0f)
         vel = glm::normalize(vel);
 
     auto oldPosition = position;
@@ -44,20 +46,14 @@ void Player::Update(float dt)
     }
 
     // Shooting
-    mShotCooldown -= dt;
-    if (mShotCooldown < 0.0f)
-    {
-        mShotCooldown = 0.0f;
-    }
-
-    if (input->MousePressed(SDL_BUTTON_LEFT) && mShotCooldown <= 0.0f)
+    if (input->MousePressed(SDL_BUTTON_LEFT))
     {
         glm::vec2 mouseScreenPos(input->MouseX(), input->MouseY());
         glm::vec2 mouseWorldPos = Engine::instance->camera.ScreenToWorld(mouseScreenPos);
 
         glm::vec2 dir = mouseWorldPos - position;
 
-        if (glm::length(dir) > 0.0f)
+        if (glm::length2(dir) > 0.0f)
         {
             dir = glm::normalize(dir);
         }
@@ -67,21 +63,17 @@ void Player::Update(float dt)
         const float bulletSpeed = 300.0f;
         const float speedVariance = 0.05f;
 
-        float baseAngle = atan2(dir.y, dir.x);
+        float baseAngle = std::atan2(dir.y, dir.x);
 
         float spreadRadians = glm::radians(spreadDegrees);
 
         for (int i = 0; i < pelletCount; ++i)
         {
-            float angleOffset = glm::linearRand(-spreadRadians * 0.5f, spreadRadians * 0.5f);
+            float angle = baseAngle + Random::Float(-spreadRadians * 0.5f, spreadRadians * 0.5f);
 
-            float angle = baseAngle + angleOffset;
+            glm::vec2 pelletDir(std::cos(angle), std::sin(angle));
 
-            glm::vec2 pelletDir(cos(angle), sin(angle));
-
-            float random = static_cast<float>(rand()) / RAND_MAX;
-            float speedMultiplier = 1.0f + (random - 0.5f) * 2.0f * speedVariance;
-
+            float speedMultiplier = Random::Float(1.0f - speedVariance, 1.0f + speedVariance);
             float pelletSpeed = bulletSpeed * speedMultiplier;
 
             auto* projectile = Engine::instance->world->CreateEntity<Projectile>("data/bullet.png");
@@ -93,8 +85,6 @@ void Player::Update(float dt)
 
             projectile->SetVelocity(absoluteBulletVelocity);
         }
-
-        mShotCooldown = kShotCooldown;
     }
 }
 void Player::Render()

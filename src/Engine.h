@@ -18,6 +18,9 @@ class Engine
     Engine() { instance = this; }
     ~Engine();
 
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+
     bool Init();
     void Shutdown();
     void Run();

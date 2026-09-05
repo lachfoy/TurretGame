@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 #include <memory>
 #include <vector>
 
@@ -11,7 +13,11 @@ class Player;
 class World
 {
   public:
+    World() {}
     ~World() {}
+
+    World(const World&) = delete;
+    World& operator=(const World&) = delete;
 
     void Init();
 
@@ -26,7 +32,7 @@ class World
         return ptr;
     }
 
-    template <typename T, typename Predicate> const std::vector<T*>& Query(Predicate&& pred) const
+    template <typename T, typename Predicate> std::vector<T*> Query(Predicate&& pred) const
     {
         std::vector<T*> result;
         for (auto& e : mEntities)
@@ -38,16 +44,16 @@ class World
         return result;
     }
 
-    template <typename T> const std::vector<T*>& Query() const
+    template <typename T> std::vector<T*> Query() const
     {
         return Query<T>([](const T&) { return true; });
     }
 
     template <typename T>
-    const std::vector<T*>& QueryInRadius(const World& world, glm::vec2 center, float radius)
+    std::vector<T*> QueryInRadius(const World& world, glm::vec2 center, float radius)
     {
         float r2 = radius * radius;
-        return world.Query<T>([&](const T& t) { return glm::length(t.position - center) <= r2; });
+        return world.Query<T>([&](const T& t) { return glm::length2(t.position - center) <= r2; });
     }
 
     void Update(float dt);

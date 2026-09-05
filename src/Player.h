@@ -17,6 +17,4 @@ class Player : public Entity
     Texture mTexture;
     glm::vec4 color = glm::vec4(1.0f);
     float mSpeed = 50.0f;
-    float mShotCooldown = 0.0f;
-    static constexpr float kShotCooldown = 0.01f;
 };
