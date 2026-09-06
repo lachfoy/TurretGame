@@ -37,13 +37,7 @@ void Player::Update(float dt)
     if (glm::length2(vel) > 0.0f)
         vel = glm::normalize(vel);
 
-    auto oldPosition = position;
     position += vel * mSpeed * dt;
-
-    if (position != oldPosition)
-    {
-        std::printf("new pos: %.0f,%.0f\n", position.x, position.y);
-    }
 
     // Shooting
     if (input->MousePressed(SDL_BUTTON_LEFT))
@@ -76,7 +70,8 @@ void Player::Update(float dt)
             float speedMultiplier = Random::Float(1.0f - speedVariance, 1.0f + speedVariance);
             float pelletSpeed = bulletSpeed * speedMultiplier;
 
-            auto* projectile = Engine::instance->world->CreateEntity<Projectile>("data/bullet.png");
+            auto* projectile =
+                Engine::instance->world->CreateGameObject<Projectile>("data/bullet.png");
 
             projectile->position = position;
             projectile->rotation = glm::degrees(angle);
@@ -90,5 +85,5 @@ void Player::Update(float dt)
 void Player::Render()
 {
     Engine::instance->renderer->DrawSprite(mTexture, position, glm::vec2(13, 19) * scale, rotation,
-                                           color);
+                                           mColor);
 }

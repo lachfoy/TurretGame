@@ -1,44 +1,26 @@
 
 #include "World.h"
-#include "Engine.h"
-#include "Player.h"
-
-void World::Init()
-{
-    Engine::instance->textureManager->Load("data/guy.png");
-    Engine::instance->textureManager->Load("data/bullet.png");
-
-    mPlayer = CreateEntity<Player>("data/guy.png");
-}
-
-void World::Shutdown()
-{
-    Engine::instance->textureManager->Unload("data/bullet.png");
-    Engine::instance->textureManager->Unload("data/guy.png");
-}
 
 void World::Update(float dt)
 {
-    for (const auto& e : mEntities)
+    for (const auto& obj : mGameObjects)
     {
-        e->Update(dt);
+        obj->Update(dt);
     }
 
-    for (auto& e : mPendingEntities)
+    for (auto& obj : mPendingAdds)
     {
-        mEntities.push_back(std::move(e));
+        mGameObjects.push_back(std::move(obj));
     }
-    mPendingEntities.clear();
+    mPendingAdds.clear();
 
-    mEntities.erase(std::remove_if(mEntities.begin(), mEntities.end(),
-                                   [](const auto& e) { return e->IsPendingDestroy(); }),
-                    mEntities.end());
-
-    Engine::instance->camera.SetPosition(mPlayer->position);
+    mGameObjects.erase(std::remove_if(mGameObjects.begin(), mGameObjects.end(),
+                                      [](const auto& e) { return e->IsPendingDestroy(); }),
+                       mGameObjects.end());
 }
 
 void World::Render()
 {
-    for (auto& e : mEntities)
+    for (auto& e : mGameObjects)
         e->Render();
 }

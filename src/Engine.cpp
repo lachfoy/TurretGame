@@ -75,7 +75,9 @@ void Engine::InitSubsystems()
     Random::Init(12345);
 
     world = std::make_unique<World>();
-    world->Init();
+
+    game = std::make_unique<Game>();
+    game->Init();
 }
 
 bool Engine::Init()
@@ -100,11 +102,13 @@ void Engine::Shutdown()
         return;
     mShutdown = true;
 
-    if (world)
+    if (game)
     {
-        world->Shutdown();
-        world.reset();
+        game->Shutdown();
+        game.reset();
     }
+
+    world.reset();
 
     if (renderer)
     {

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Entity.h"
+#include "GameObject.h"
 #include "Texture.h"
 #include <glm/glm.hpp>
 #include <string>
 
-class Player : public Entity
+class Player : public GameObject
 {
   public:
     explicit Player(const std::string& texturePath);
@@ -15,6 +15,6 @@ class Player : public Entity
 
   private:
     Texture mTexture;
-    glm::vec4 color = glm::vec4(1.0f);
+    glm::vec4 mColor = glm::vec4(1.0f);
     float mSpeed = 50.0f;
 };

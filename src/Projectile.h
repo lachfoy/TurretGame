@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Entity.h"
+#include "GameObject.h"
 #include "Texture.h"
 #include <glm/glm.hpp>
 #include <string>
 
-class Projectile : public Entity
+class Projectile : public GameObject
 {
   public:
     explicit Projectile(const std::string& texturePath);

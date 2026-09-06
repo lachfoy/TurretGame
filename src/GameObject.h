@@ -2,12 +2,10 @@
 
 #include <glm/glm.hpp>
 
-class World;
-
-class Entity
+class GameObject
 {
   public:
-    virtual ~Entity() = default;
+    virtual ~GameObject() = default;
 
     virtual void Update(float /*dt*/) {}
     virtual void Render() {}

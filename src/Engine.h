@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Camera.h"
+#include "Game.h"
 #include "Input.h"
 #include "Renderer.h"
 #include "TextureManager.h"
@@ -33,6 +34,7 @@ class Engine
     std::unique_ptr<World> world;
     Camera camera;
     std::unique_ptr<TextureManager> textureManager;
+    std::unique_ptr<Game> game;
 
     double fixedDelta = 1.0 / 60.0;
     double accumulator = 0.0;

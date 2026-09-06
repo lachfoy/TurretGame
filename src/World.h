@@ -6,9 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "Entity.h"
-
-class Player;
+#include "GameObject.h"
 
 class World
 {
@@ -19,48 +17,49 @@ class World
     World(const World&) = delete;
     World& operator=(const World&) = delete;
 
-    void Init();
-
-    void Shutdown();
-
-    template <typename T, typename... Args> T* CreateEntity(Args&&... args)
+    template <typename T, typename... Args> T* CreateGameObject(Args&&... args)
     {
-        static_assert(std::is_base_of_v<Entity, T>);
-        auto e = std::make_unique<T>(std::forward<Args>(args)...);
-        T* ptr = e.get();
-        mPendingEntities.push_back(std::move(e));
+        static_assert(std::is_base_of_v<GameObject, T>);
+        auto obj = std::make_unique<T>(std::forward<Args>(args)...);
+        T* ptr = obj.get();
+        mPendingAdds.push_back(std::move(obj));
         return ptr;
-    }
-
-    template <typename T, typename Predicate> std::vector<T*> Query(Predicate&& pred) const
-    {
-        std::vector<T*> result;
-        for (auto& e : mEntities)
-        {
-            if (T* t = dynamic_cast<T*>(e.get()))
-                if (pred(*t))
-                    result.push_back(t);
-        }
-        return result;
-    }
-
-    template <typename T> std::vector<T*> Query() const
-    {
-        return Query<T>([](const T&) { return true; });
-    }
-
-    template <typename T>
-    std::vector<T*> QueryInRadius(const World& world, glm::vec2 center, float radius)
-    {
-        float r2 = radius * radius;
-        return world.Query<T>([&](const T& t) { return glm::length2(t.position - center) <= r2; });
     }
 
     void Update(float dt);
     void Render();
 
+    template <typename T> std::vector<T*> GetGameObjects() const
+    {
+        std::vector<T*> res;
+        for (auto& obj : mGameObjects)
+        {
+            if (T* t = dynamic_cast<T*>(obj.get()))
+            {
+                res.push_back(t);
+            }
+        }
+        return res;
+    }
+
+    template <typename T> std::vector<T*> GetGameObjectsInRadius(glm::vec2 center, float radius)
+    {
+        std::vector<T*> res;
+        float r2 = radius * radius;
+        for (auto& obj : mGameObjects)
+        {
+            if (T* t = dynamic_cast<T*>(obj.get()))
+            {
+                if (glm::length2(t->position - center) <= r2)
+                {
+                    res.push_back(t);
+                }
+            }
+        }
+        return res;
+    }
+
   private:
-    std::vector<std::unique_ptr<Entity>> mEntities;
-    std::vector<std::unique_ptr<Entity>> mPendingEntities;
-    Player* mPlayer;
+    std::vector<std::unique_ptr<GameObject>> mGameObjects;
+    std::vector<std::unique_ptr<GameObject>> mPendingAdds;
 };
