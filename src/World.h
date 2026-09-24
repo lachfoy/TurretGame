@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
+#include <glm/gtx/norm.hpp> //glm::length2
 #include <memory>
 #include <vector>
 
@@ -28,6 +28,8 @@ class World
 
     void Update(float dt);
     void Render();
+
+    void Clear();
 
     template <typename T> std::vector<T*> GetGameObjects() const
     {

@@ -5,10 +5,10 @@
 #include <glm/glm.hpp>
 #include <string>
 
-class Player : public GameObject
+class Enemy : public GameObject
 {
   public:
-    explicit Player(const std::string& texturePath);
+    explicit Enemy(const std::string& texturePath);
 
     void Update(float dt) override;
     void Render() override;
@@ -16,5 +16,4 @@ class Player : public GameObject
   private:
     Texture m_texture;
     glm::vec4 m_color = glm::vec4(1.0f);
-    float m_speed = 50.0f;
 };

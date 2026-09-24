@@ -3,13 +3,13 @@
 
 Projectile::Projectile(const std::string& texturePath)
 {
-    mTexture = Engine::instance->textureManager->Get(texturePath);
+    m_texture = Engine::instance->textureManager->Get(texturePath);
 }
 
-void Projectile::Update(float dt) { position += mVelocity * dt; }
+void Projectile::Update(float dt) { position += m_velocity * dt; }
 
 void Projectile::Render()
 {
-    Engine::instance->renderer->DrawSprite(mTexture, position, glm::vec2(4, 4) * scale, rotation,
-                                           color);
+    Engine::instance->renderer->DrawSprite(m_texture, position, glm::vec2(4, 4) * scale, rotation,
+                                           m_color);
 }

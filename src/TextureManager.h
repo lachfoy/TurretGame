@@ -19,5 +19,5 @@ class TextureManager
     Texture Get(const std::string& path) const;
 
   private:
-    std::unordered_map<std::string, Texture> mTextures;
+    std::unordered_map<std::string, Texture> m_textures;
 };

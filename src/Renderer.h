@@ -32,5 +32,5 @@ class Renderer
                     glm::vec4 uvRect = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
   private:
-    RendererImpl* mImpl = nullptr;
+    RendererImpl* m_impl = nullptr;
 };

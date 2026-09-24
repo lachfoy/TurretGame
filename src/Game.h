@@ -11,5 +11,5 @@ class Game
     void Update(float dt);
 
   private:
-    Player* mPlayer = nullptr;
+    Player* m_player = nullptr;
 };

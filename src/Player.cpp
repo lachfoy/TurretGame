@@ -5,11 +5,11 @@
 #include "glm/trigonometric.hpp"
 #include <SDL3/SDL_mouse.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
+#include <glm/gtx/norm.hpp> //glm::length2
 
 Player::Player(const std::string& texturePath)
 {
-    mTexture = Engine::instance->textureManager->Get(texturePath);
+    m_texture = Engine::instance->textureManager->Get(texturePath);
 }
 
 void Player::Update(float dt)
@@ -37,7 +37,7 @@ void Player::Update(float dt)
     if (glm::length2(vel) > 0.0f)
         vel = glm::normalize(vel);
 
-    position += vel * mSpeed * dt;
+    position += vel * m_speed * dt;
 
     // Shooting
     if (input->MousePressed(SDL_BUTTON_LEFT))
@@ -82,8 +82,9 @@ void Player::Update(float dt)
         }
     }
 }
+
 void Player::Render()
 {
-    Engine::instance->renderer->DrawSprite(mTexture, position, glm::vec2(13, 19) * scale, rotation,
-                                           mColor);
+    Engine::instance->renderer->DrawSprite(m_texture, position, glm::vec2(13, 19) * scale, rotation,
+                                           m_color);
 }

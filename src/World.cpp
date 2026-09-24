@@ -24,3 +24,9 @@ void World::Render()
     for (auto& e : mGameObjects)
         e->Render();
 }
+
+void World::Clear()
+{
+    mGameObjects.clear();
+    mPendingAdds.clear();
+}

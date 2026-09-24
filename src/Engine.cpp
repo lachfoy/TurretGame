@@ -98,9 +98,9 @@ bool Engine::Init()
 
 void Engine::Shutdown()
 {
-    if (mShutdown)
+    if (m_shutdown)
         return;
-    mShutdown = true;
+    m_shutdown = true;
 
     if (game)
     {
@@ -159,7 +159,15 @@ void Engine::Run()
             input->HandleEvent(event);
 
             if (event.type == SDL_EVENT_QUIT)
+            {
                 running = false;
+                break;
+            }
+        }
+
+        if (running == false)
+        {
+            break;
         }
 
         accumulator += frameTime;

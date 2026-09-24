@@ -13,10 +13,10 @@ class Projectile : public GameObject
     void Update(float dt) override;
     void Render() override;
 
-    void SetVelocity(glm::vec2 velocity) { mVelocity = velocity; }
+    void SetVelocity(glm::vec2 velocity) { m_velocity = velocity; }
 
   private:
-    Texture mTexture;
-    glm::vec4 color = glm::vec4(1.0f);
-    glm::vec2 mVelocity = glm::vec2(0.0f);
+    Texture m_texture;
+    glm::vec4 m_color = glm::vec4(1.0f);
+    glm::vec2 m_velocity = glm::vec2(0.0f);
 };

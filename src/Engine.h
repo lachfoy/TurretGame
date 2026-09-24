@@ -47,5 +47,5 @@ class Engine
     bool InitGl();
     void InitSubsystems();
 
-    bool mShutdown = false;
+    bool m_shutdown = false;
 };

@@ -2,11 +2,13 @@
 
 #include <cstdint>
 
-static constexpr std::uintptr_t kInvalidTextureId = 0;
+using TextureId = std::uintptr_t;
+
+static constexpr TextureId kInvalidTextureId = 0;
 
 struct Texture
 {
-    std::uintptr_t id = kInvalidTextureId;
+    TextureId id = kInvalidTextureId;
     int width = -1;
     int height = -1;
 };

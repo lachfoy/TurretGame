@@ -156,27 +156,27 @@ void Flush(RendererImpl& impl)
 }
 } // namespace
 
-Renderer::Renderer() { mImpl = new RendererImpl(); }
+Renderer::Renderer() { m_impl = new RendererImpl(); }
 
-Renderer::~Renderer() { delete mImpl; }
+Renderer::~Renderer() { delete m_impl; }
 
 bool Renderer::Init()
 {
-    mImpl->vertices.reserve(mImpl->maxQuadsPerFlush * 4);
+    m_impl->vertices.reserve(m_impl->maxQuadsPerFlush * 4);
 
     GLuint vs = CompileShader(GL_VERTEX_SHADER, kVertexSrc);
     GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFragmentSrc);
-    mImpl->shader = LinkProgram(vs, fs);
+    m_impl->shader = LinkProgram(vs, fs);
 
-    glGenVertexArrays(1, &mImpl->vao);
-    glGenBuffers(1, &mImpl->vbo);
-    glGenBuffers(1, &mImpl->ibo);
+    glGenVertexArrays(1, &m_impl->vao);
+    glGenBuffers(1, &m_impl->vbo);
+    glGenBuffers(1, &m_impl->ibo);
 
-    glBindVertexArray(mImpl->vao);
+    glBindVertexArray(m_impl->vao);
 
-    // Vertex buffer is re-uploaded every flush, so just reserve worst-case size up front.
-    glBindBuffer(GL_ARRAY_BUFFER, mImpl->vbo);
-    glBufferData(GL_ARRAY_BUFFER, mImpl->maxQuadsPerFlush * 4 * sizeof(Vertex), nullptr,
+    // Set up vertex buffer and attributes
+    glBindBuffer(GL_ARRAY_BUFFER, m_impl->vbo);
+    glBufferData(GL_ARRAY_BUFFER, m_impl->maxQuadsPerFlush * 4 * sizeof(Vertex), nullptr,
                  GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
@@ -187,9 +187,9 @@ bool Renderer::Init()
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
 
-    // Index pattern (0,1,2, 2,3,0) repeats per quad - generate it once up front.
-    std::vector<uint32_t> indices(mImpl->maxQuadsPerFlush * 6);
-    for (size_t i = 0; i < mImpl->maxQuadsPerFlush; ++i)
+    // Indices are unchanging, generate them all upfront
+    std::vector<uint32_t> indices(m_impl->maxQuadsPerFlush * 6);
+    for (size_t i = 0; i < m_impl->maxQuadsPerFlush; ++i)
     {
         uint32_t base = static_cast<uint32_t>(i * 4);
         size_t o = i * 6;
@@ -201,16 +201,15 @@ bool Renderer::Init()
         indices[o + 5] = base + 0;
     }
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mImpl->ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_impl->ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(),
                  GL_STATIC_DRAW);
 
     glBindVertexArray(0);
 
-    // 1x1 white pixel - used whenever DrawSprite() gets no texture, so solid-color
-    // rects work without every caller needing a dummy texture.
-    glGenTextures(1, &mImpl->whiteTexture);
-    glBindTexture(GL_TEXTURE_2D, mImpl->whiteTexture);
+    // 1x1 white pixel for draws without a texture
+    glGenTextures(1, &m_impl->whiteTexture);
+    glBindTexture(GL_TEXTURE_2D, m_impl->whiteTexture);
     unsigned char whitePixel[] = {0xff, 0xff, 0xff, 0xff};
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -220,18 +219,18 @@ bool Renderer::Init()
 
 void Renderer::Shutdown()
 {
-    if (mImpl->whiteTexture)
-        glDeleteTextures(1, &mImpl->whiteTexture);
-    if (mImpl->ibo)
-        glDeleteBuffers(1, &mImpl->ibo);
-    if (mImpl->vbo)
-        glDeleteBuffers(1, &mImpl->vbo);
-    if (mImpl->vao)
-        glDeleteVertexArrays(1, &mImpl->vao);
-    if (mImpl->shader)
-        glDeleteProgram(mImpl->shader);
+    if (m_impl->whiteTexture)
+        glDeleteTextures(1, &m_impl->whiteTexture);
+    if (m_impl->ibo)
+        glDeleteBuffers(1, &m_impl->ibo);
+    if (m_impl->vbo)
+        glDeleteBuffers(1, &m_impl->vbo);
+    if (m_impl->vao)
+        glDeleteVertexArrays(1, &m_impl->vao);
+    if (m_impl->shader)
+        glDeleteProgram(m_impl->shader);
 
-    mImpl->whiteTexture = mImpl->ibo = mImpl->vbo = mImpl->vao = mImpl->shader = 0;
+    m_impl->whiteTexture = m_impl->ibo = m_impl->vbo = m_impl->vao = m_impl->shader = 0;
 }
 
 void Renderer::Clear(float r, float g, float b)
@@ -251,12 +250,12 @@ void Renderer::BeginFrame(const Camera& camera)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
 
-    mImpl->viewProj = camera.GetViewProj();
-    mImpl->vertices.clear();
-    mImpl->currentTexture = 0;
+    m_impl->viewProj = camera.GetViewProj();
+    m_impl->vertices.clear();
+    m_impl->currentTexture = 0;
 }
 
-void Renderer::EndFrame() { Flush(*mImpl); }
+void Renderer::EndFrame() { Flush(*m_impl); }
 
 Texture Renderer::LoadTexture(const char* path)
 {
@@ -307,16 +306,16 @@ void Renderer::DrawSprite(Texture texture, glm::vec2 position, glm::vec2 size,
                           float rotationDegrees, glm::vec4 color, glm::vec4 uvRect)
 {
     GLuint glId = texture.id != kInvalidTextureId ? reinterpret_cast<GLTexture*>(texture.id)->id
-                                                  : mImpl->whiteTexture;
+                                                  : m_impl->whiteTexture;
 
     // flush whatevers queued under the old texture first.
-    if (glId != mImpl->currentTexture && mImpl->currentTexture != 0)
-        Flush(*mImpl);
+    if (glId != m_impl->currentTexture && m_impl->currentTexture != 0)
+        Flush(*m_impl);
 
-    mImpl->currentTexture = glId;
+    m_impl->currentTexture = glId;
 
-    if (mImpl->vertices.size() / 4 >= mImpl->maxQuadsPerFlush)
-        Flush(*mImpl);
+    if (m_impl->vertices.size() / 4 >= m_impl->maxQuadsPerFlush)
+        Flush(*m_impl);
 
     glm::vec2 half = size * 0.5f;
     float rad = glm::radians(rotationDegrees);
@@ -340,6 +339,6 @@ void Renderer::DrawSprite(Texture texture, glm::vec2 position, glm::vec2 size,
     for (int i = 0; i < 4; ++i)
     {
         glm::vec2 rotated(corners[i].x * c - corners[i].y * s, corners[i].x * s + corners[i].y * c);
-        mImpl->vertices.push_back({position + rotated, uvs[i], color});
+        m_impl->vertices.push_back({position + rotated, uvs[i], color});
     }
 }
