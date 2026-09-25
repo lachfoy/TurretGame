@@ -16,4 +16,5 @@ class Enemy : public GameObject
   private:
     Texture m_texture;
     glm::vec4 m_color = glm::vec4(1.0f);
+    GameObject* m_target = nullptr;
 };
